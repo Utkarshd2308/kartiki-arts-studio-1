@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, white 0%, #764ba2 100%); min-height: 100vh; }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px; border-radius: 20px; margin-bottom: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header h1 { color: #333; font-size: 2.2em; background: linear-gradient(45deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .back-to-website { 
+            background: linear-gradient(45deg, #00b894, #00cec9); color: white; border: none; 
+            padding: 15px 30px; border-radius: 50px; font-weight: 700; font-size: 16px; 
+            cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 30px rgba(0,184,148,0.3); 
+        }
+        .back-to-website:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(0,184,148,0.4); }
+        
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
+        .nav-tab { padding: 15px 30px; background: #f8f9ff; border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s; font-weight: 600; }
+        .nav-tab.active { background: linear-gradient(45deg, #667eea, #764ba2); color: white; transform: translateY(-3px); }
+        
+        .form-container { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); display: none; }
+        .form-container.active { display: block; animation: slideIn 0.5s; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-weight: 600; margin-bottom: 8px; color: #333; }
+        input, textarea, select { padding: 15px; border: 2px solid #e1e5e9; border-radius: 12px; font-size: 16px; transition: all 0.3s; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        
+        .multi-image-upload { border: 3px dashed #667eea; border-radius: 15px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .multi-image-upload:hover { background: rgba(102,126,234,0.05); }
+        .multi-image-upload.dragover { border-color: #764ba2; background: rgba(118,75,162,0.1); }
+        #imagePreview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .image-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; cursor: pointer; position: relative; }
+        .remove-img { position: absolute; top: -8px; right: -8px; background: #ff4757; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
+        
+        .btn { padding: 15px 30px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin: 5px; }
+        .btn-primary { background: linear-gradient(45deg, #667eea, #764ba2); color: white; }
+        .btn-success { background: linear-gradient(45deg, #00b894, #00cec9); color: white; }
+        .btn-danger { background: linear-gradient(45deg, #ff6b7a, #ff7675); color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        
+        .products-list, .categories-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .product-card, .category-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; }
+        .product-card:hover, .category-card:hover { transform: translateY(-5px); box-shadow: 0 25px 50px rgba(0,0,0,0.15); }
+        .product-images { display: flex; gap: 10px; margin-bottom: 15px; }
+        .product-images img { width: 60px; height: 60px; object-fit: cover; border-radius: 10px; }
+        .product-title { font-size: 1.4em; font-weight: 700; color: #333; margin-bottom: 10px; }
+        .product-price { font-size: 1.3em; font-weight: 700; color: #00b894; margin-bottom: 10px; }
+        .product-category { background: #667eea; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.9em; display: inline-block; }
+        
+        .sidebar { position: fixed; left: -300px; top: 0; width: 300px; height: 100vh; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); box-shadow: 5px 0 25px rgba(0,0,0,0.1); transition: left 0.3s; z-index: 1000; padding: 30px 0; }
+        .sidebar.active { left: 0; }
+        .sidebar-toggle { position: fixed; left: 20px; top: 20px; z-index: 1001; background: rgba(255,255,255,0.9); border: none; width: 60px; height: 60px; border-radius: 50%; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        
+        .edit-indicator { background: linear-gradient(45deg, #00b894, #00cec9); padding: 10px 20px; border-radius: 25px; color: white; font-weight: 600; margin-bottom: 20px; display: none; }
+        .edit-indicator.active { display: block; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        
+        @media (max-width: 768px) { 
+            .form-grid { grid-template-columns: 1fr; } 
+            .nav-tabs { justify-content: center; } 
+            .products-list, .categories-list { grid-template-columns: 1fr; }
+            .header { flex-direction: column; text-align: center; gap: 20px; }
+            .back-to-website { width: 100%; max-width: 300px; }
+        }
+    </style>
+</head>
+<body>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+    
+    <div class="sidebar" id="sidebar">
+        <h2><p>Kartiki Arts Studio</p> Admin Panel</h2>
+        <button class="btn btn-primary" onclick="switchTab('add-product')">➕ Add Product</button>
+        <button class="btn btn-success" onclick="switchTab('edit-product')">✏️ Edit Product</button>
+        <button class="btn btn-primary" onclick="switchTab('add-category')">📂 Add Category</button>
+        <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+        <hr style="margin: 20px 0; border: none; height: 1px; background: #e1e5e9;">
+        <button class="back-to-website" onclick="goToHomepage()">🏠 Back to Website</button>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1><p>Kartiki Arts Studio</p></h1><h2>Admin Panel</h2>
+            <button class="back-to-website" onclick="goToHomepage()">
+                🏠 Back to Website
+            </button>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('add-product')">Add Product</button>
+            <button class="nav-tab" onclick="switchTab('edit-product')">Edit Products</button>
+            <button class="nav-tab" onclick="switchTab('add-category')">Manage Categories</button>
+        </div>
+        
+        <!-- Add Product Form -->
+        <div id="add-product" class="form-container active">
+            <div class="edit-indicator" id="editIndicator">✏️ Edit Mode Active - तेच Product Update होईल</div>
+            <h2 id="formTitle">➕ नवीन Product Add करा</h2>
+            <form id="productForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Product Name</label>
+                        <input type="text" id="pName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Price (₹)</label>
+                        <input type="number" id="pPrice" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="pCategory" required>
+                            <option value="">Category निवडा</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="pDesc" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Multiple Images (Drag & Drop)</label>
+                        <div class="multi-image-upload" id="imageUpload">
+                            📸 Images Select करा किंवा येथे Drag करा (Max 5)
+                            <div id="imagePreview"></div>
+                            <input type="file" id="imageFiles" multiple accept="image/*" style="display:none;">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-danger" id="cancelBtn" onclick="cancelEdit()" style="display:none;">❌ Cancel</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">✅ Product Save करा</button>
+            </form>
+        </div>
+        
+        <!-- Edit Products List -->
+        <div id="edit-product" class="form-container">
+            <h2>✏️ Products List - Edit/Delete</h2>
+            <div class="products-list" id="productsList"></div>
+        </div>
+        
+        <!-- Categories Management -->
+        <div id="add-category" class="form-container">
+            <h2>📂 Categories Manage करा</h2>
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label>नवीन Category Name</label>
+                    <input type="text" id="cName" required>
+                </div>
+                <button type="submit" class="btn btn-primary">✅ Category Save</button>
+            </form>
+            <h3 style="margin-top: 30px;">सध्याच्या Categories:</h3>
+            <div class="categories-list" id="categoriesList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage
+        let products = JSON.parse(localStorage.getItem('mlaProducts')) || [];
+        let categories = JSON.parse(localStorage.getItem('mlaCategories')) || ['All Products', 'Resin Art', 'Fruits'];
+        let isEditing = false;
+        let editingProductId = null;
+
+        // Back to Website
+        function goToHomepage() {
+            if (confirm('🏠 Website च्या Home Page वर जाणार?')) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Load categories
+        function loadCategories() {
+            const select = document.getElementById('pCategory');
+            select.innerHTML = '<option value="">Category निवडा</option>';
+            categories.filter(cat => cat !== 'All Products').forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+        }
+
+        // Image Upload Handler
+        const imageUpload = document.getElementById('imageUpload');
+        const imageFiles = document.getElementById('imageFiles');
+        const imagePreview = document.getElementById('imagePreview');
+        let selectedImages = [];
+
+        imageUpload.addEventListener('click', () => imageFiles.click());
+        imageUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            imageUpload.classList.add('dragover');
+        });
+        imageUpload.addEventListener('dragleave', () => imageUpload.classList.remove('dragover'));
+        imageUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            imageUpload.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            handleImages(files);
+        });
+        imageFiles.addEventListener('change', (e) => handleImages(Array.from(e.target.files)));
+
+        function handleImages(files) {
+            Array.from(files).slice(0, 5).forEach(file => {
+                if (!selectedImages.some(img => img.name === file.name)) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        selectedImages.push({ name: file.name, data: e.target.result });
+                        displayImages();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function displayImages() {
+            imagePreview.innerHTML = '';
+            selectedImages.forEach((img, index) => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <img src="${img.data}" class="image-thumb">
+                    <span class="remove-img" onclick="removeImage(${index})">×</span>
+                `;
+                imagePreview.appendChild(div);
+            });
+        }
+
+        function removeImage(index) {
+            selectedImages.splice(index, 1);
+            displayImages();
+        }
+
+        // ✅ PERFECTLY FIXED: तेच product update होईल!
+        document.getElementById('productForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const productData = {
+                name: document.getElementById('pName').value,
+                price: document.getElementById('pPrice').value,
+                category: document.getElementById('pCategory').value,
+                desc: document.getElementById('pDesc').value,
+                images: selectedImages.map(img => img.data)
+            };
+            
+            if (isEditing && editingProductId !== null) {
+                // 🔥 तेच product replace करा - NO NEW COPY!
+                const productIndex = products.findIndex(p => p.id === editingProductId);
+                if (productIndex !== -1) {
+                    products[productIndex] = { 
+                        id: editingProductId,  // ✅ ID SAME राखा
+                        ...productData 
+                    };
+                    alert(`✅ "${productData.name}" SUCCESSFULLY UPDATED! तेच card update झाला! 🎉`);
+                }
+            } else {
+                // नवा product add करा
+                const newProduct = {
+                    id: Date.now(),
+                    ...productData
+                };
+                products.unshift(newProduct);  // फक्त Add mode मध्ये unshift
+                alert('✅ नवा Product SAVE झाला!');
+            }
+            
+            localStorage.setItem('mlaProducts', JSON.stringify(products));
+            resetForm();
+            loadCategories();
+            loadProducts();  // List refresh होईल
+        });
+
+        // Reset Form
+        function resetForm() {
+            document.getElementById('productForm').reset();
+            selectedImages = [];
+            imagePreview.innerHTML = '';
+            isEditing = false;
+            editingProductId = null;
+            
+            document.getElementById('editIndicator').classList.remove('active');
+            document.getElementById('formTitle').textContent = '➕ नवीन Product Add करा';
+            document.getElementById('submitBtn').textContent = '✅ Product Save करा';
+            document.getElementById('submitBtn').className = 'btn btn-primary';
+            document.getElementById('cancelBtn').style.display = 'none';
+        }
+
+        // Edit Product - तेच card चे data load करा
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (product) {
+                document.getElementById('pName').value = product.name;
+                document.getElementById('pPrice').value = product.price;
+                document.getElementById('pCategory').value = product.category;
+                document.getElementById('pDesc').value = product.desc;
+                selectedImages = product.images.map((img, i) => ({ name: `img${i}`, data: img }));
+                displayImages();
+                
+                isEditing = true;
+                editingProductId = id;  // ✅ हा ID महत्त्वाचा
+                
+                // UI Update
+                document.getElementById('editIndicator').classList.add('active');
+                document.getElementById('formTitle').textContent = `✏️ "${product.name}" Edit करा`;
+                document.getElementById('submitBtn').textContent = '✅ Update Save करा';
+                document.getElementById('submitBtn').className = 'btn btn-success';
+                document.getElementById('cancelBtn').style.display = 'inline-block';
+                
+                switchTab('add-product');
+            }
+        }
+
+        function cancelEdit() {
+            if (confirm('❌ Changes discard कराल?')) {
+                resetForm();
+            }
+        }
+
+        function switchTab(tabName) {
+            if (isEditing && tabName !== 'add-product') {
+                if (confirm('✏️ Edit mode मध्ये आहात. Changes हरवतील?')) {
+                    resetForm();
+                } else {
+                    return;
+                }
+            }
+            
+            document.querySelectorAll('.form-container').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'edit-product') loadProducts();
+            if (tabName === 'add-category') loadCategoriesList();
+        }
+
+        function loadProducts() {
+            const list = document.getElementById('productsList');
+            list.innerHTML = products.map(p => `
+                <div class="product-card">
+                    <div class="product-images">
+                        ${p.images.slice(0,3).map(img => `<img src="${img}" alt="${p.name}">`).join('')}
+                        ${p.images.length > 3 ? `<span style="background:#667eea;color:white;padding:2px 8px;border-radius:10px;font-size:12px;">+${p.images.length-3}</span>` : ''}
+                    </div>
+                    <div class="product-title">${p.name}</div>
+                    <div class="product-price">₹${p.price}</div>
+                    <div class="product-category">${p.category}</div>
+                    <div style="margin-top:15px;">
+                        <button class="btn btn-success" onclick="editProduct(${p.id})">Edit</button>
+                        <button class="btn btn-danger" onclick="deleteProduct(${p.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteProduct(id) {
+            if (confirm('🗑️ Delete कराल?')) {
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('mlaProducts', JSON.stringify(products));
+                loadProducts();
+            }
+        }
+
+        // Category functions (same)
+        document.getElementById('categoryForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('cName').value;
+            if (!categories.includes(name)) {
+                categories.push(name);
+                localStorage.setItem('mlaCategories', JSON.stringify(categories));
+                document.getElementById('categoryForm').reset();
+                loadCategories();
+                loadCategoriesList();
+            }
+        });
+
+        function loadCategoriesList() {
+            const list = document.getElementById('categoriesList');
+            list.innerHTML = categories.filter(cat => cat !== 'All Products').map(cat => `
+                <div class="category-card">
+                    <h3>${cat}</h3>
+                    <button class="btn btn-danger" onclick="deleteCategory('${cat}')">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteCategory(name) {
+            if (confirm('Category delete?')) {
+                categories = categories.filter(c => c !== name);
+                localStorage.setItem('mlaCategories', JSON.stringify(categories));
+                loadCategories();
+                loadCategoriesList();
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('सर्व data delete?')) {
+                localStorage.removeItem('mlaProducts');
+                localStorage.removeItem('mlaCategories');
+                products = [];
+                categories = ['All Products', 'Resin Art', 'Fruits'];
+                resetForm();
+                loadProducts();
+                loadCategoriesList();
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Initial Load
+        loadCategories();
+        loadProducts();
+        loadCategoriesList();
+    </script>
+</body>
+</html>
